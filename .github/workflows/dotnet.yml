@@ -6,6 +6,10 @@ on:
   pull_request: 
     branches: ["main"]
 
+env:
+  AZURE_WEBAPP_NAME: sharebook-api
+  AZURE_WEBAPP_PACKAGE_PATH: "./publish"
+
 jobs:
   build:
 
@@ -27,7 +31,13 @@ jobs:
 
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    
-    - name: Publish
-      run: dotnet publish --configuration Release --no-build
 
+    - name: Publish
+      run: dotnet publish ./Sharebook.sln --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    -name: Deployment
+      uses: actions/webapps-deploy@v4
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profiles: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
