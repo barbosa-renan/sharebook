@@ -52,7 +52,7 @@ jobs:
         with:
           name: .net-app
 
-      -name: Deployment to Azure DevOps
+      - name: Deployment to Azure DevOps
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with: 
