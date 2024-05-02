@@ -30,7 +30,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      run: dotnet testf
+      run: dotnet test --no-build --verbosity normal
 
     - name: Publish
       run: dotnet publish --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
