@@ -31,8 +31,6 @@ namespace Sharebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductList()
         {
-            Console.WriteLine("Cached list 1");
-
             try
             {
                 var db = _redis.GetDatabase();
@@ -58,7 +56,7 @@ namespace Sharebook.Controllers
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
-            return BadRequest();
+            return Ok();
         }
 
         /// <summary>
@@ -74,31 +72,29 @@ namespace Sharebook.Controllers
         {
             try
             {
-                Console.WriteLine("Database list");
-
                 var db = _redis.GetDatabase();
 
-                var productData = await db.StringGetAsync($"product:{productId}");
-                if (productData.IsNullOrEmpty)
+                var cachedProduct = await db.StringGetAsync($"product:{productId}");
+                if (!cachedProduct.IsNullOrEmpty)
                 {
-                    var product = await _productService.GetProductById(productId);
-
-                    if (product != null)
-                    {
-                        await db.StringSetAsync($"product:{productId}", JsonSerializer.Serialize(product), TimeSpan.FromSeconds(ProductCacheTTL));
-                        return Ok(product);
-                    }
+                    var deserializedProduct = JsonSerializer.Deserialize<Product>(cachedProduct);
+                    return Ok(deserializedProduct);
                 }
 
-                var cachedProduct = JsonSerializer.Deserialize<Product>(productData);
-                return Ok(cachedProduct);
+                var product = await _productService.GetProductById(productId);
+
+                if (product != null)
+                {
+                    await db.StringSetAsync($"product:{productId}", JsonSerializer.Serialize(product), TimeSpan.FromSeconds(ProductCacheTTL));
+                    return Ok(product);
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
-            return BadRequest();
+            return Ok();
         }
 
         /// <summary>
