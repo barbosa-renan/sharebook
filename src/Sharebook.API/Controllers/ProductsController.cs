@@ -31,29 +31,31 @@ namespace Sharebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductList()
         {
+            var key = "products:list";
+
             try
             {
                 var db = _redis.GetDatabase();
-                var cachedProductList = await db.StringGetAsync("products:list");
+                var cachedProductList = await db.StringGetAsync(key);
 
                 if (!cachedProductList.IsNullOrEmpty)
                 {
-                    Console.WriteLine("Cached list 2");
                     var deserializedProductList = JsonSerializer.Deserialize<List<Product>>(cachedProductList);
+                    Console.WriteLine($"[CACHE]: {deserializedProductList.Count} itens. [TTL]: {GetKeyTTL(key, db)}");
                     return Ok(deserializedProductList);
                 }
 
                 var productList = await _productService.GetAllProducts();
                 if (productList.Any())
-                {
-                    Console.WriteLine("Database list");
+                {                    
                     await db.StringSetAsync("products:list", JsonSerializer.Serialize(productList), TimeSpan.FromSeconds(ProductCacheTTL));
+                    Console.WriteLine($"[DATABASE]: {productList.Count()} itens da base armazenados em cache. [TTL]: {GetKeyTTL(key, db)}");
                     return Ok(productList);
-                }                
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Eita! Deu erro: {ex.Message}");
             }
 
             return Ok();
@@ -70,14 +72,16 @@ namespace Sharebook.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetProductById(int productId)
         {
+            var key = $"product:{productId}";
             try
             {
                 var db = _redis.GetDatabase();
 
-                var cachedProduct = await db.StringGetAsync($"product:{productId}");
+                var cachedProduct = await db.StringGetAsync(key);
                 if (!cachedProduct.IsNullOrEmpty)
                 {
                     var deserializedProduct = JsonSerializer.Deserialize<Product>(cachedProduct);
+                    Console.WriteLine($"[CACHE]: Produto recuperado do cache. [TTL]: {GetKeyTTL(key, db)}");
                     return Ok(deserializedProduct);
                 }
 
@@ -86,12 +90,13 @@ namespace Sharebook.Controllers
                 if (product != null)
                 {
                     await db.StringSetAsync($"product:{productId}", JsonSerializer.Serialize(product), TimeSpan.FromSeconds(ProductCacheTTL));
+                    Console.WriteLine($"[DATABASE]: Produto armazenado em cache. [TTL]: {GetKeyTTL(key, db)}");
                     return Ok(product);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Eita! Deu erro: {ex.Message}");
             }
 
             return Ok();
@@ -164,6 +169,16 @@ namespace Sharebook.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        public string GetKeyTTL(string key, IDatabase db)
+        {
+            TimeSpan? ttl = db.KeyTimeToLive(key);
+
+            if (ttl.HasValue)
+                return $"TTL da chave '{key}': {ttl.Value.TotalSeconds} segundos.";
+            else
+                return $"A chave '{key}' não possui expiração ou não existe.";
         }
     }
 }

@@ -13,7 +13,7 @@ builder.Logging.AddConsole();
 // Add services to the container.
 builder.Services.AddDIServices(builder.Configuration);
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("redis_cache:6379"));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
