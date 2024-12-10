@@ -15,7 +15,7 @@ services:
         max-size: "10m"
         max-file: "3"
   redis:
-    image: redis:latest
+    image: redislabs/redisgraph:latest
     container_name: redis_cache
     ports:
       - "6379:6379"

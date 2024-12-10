@@ -22,6 +22,8 @@ namespace Sharebook.Controllers
             _redis = redis;
         }
 
+        #region < CRUD >
+
         /// <summary>
         /// Get the list of product
         /// </summary>
@@ -170,6 +172,60 @@ namespace Sharebook.Controllers
                 return BadRequest();
             }
         }
+
+        #endregion
+
+        #region < FUNCIONALIDADES ADICIONAIS >
+
+        /// <summary>
+        /// Get product by id
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        [HttpGet("details/{productId}")]
+        [SwaggerOperation(Summary = "Get product details by id", Description = "Returns a product details.")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetProductDetailsById(int productId, [FromHeader(Name = "User-Id")] string userId)
+        {
+            var key = $"product:{productId}";
+            var visitorKey = $"product:{productId}:visitors"; 
+
+            try
+            {
+                var db = _redis.GetDatabase();
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await db.HyperLogLogAddAsync(visitorKey, userId);
+                }
+
+                var cachedProduct = await db.StringGetAsync(key);
+                if (!cachedProduct.IsNullOrEmpty)
+                {
+                    var deserializedProduct = JsonSerializer.Deserialize<Product>(cachedProduct);
+                    Console.WriteLine($"[CACHE]: Produto recuperado do cache. [TTL]: {GetKeyTTL(key, db)}");
+                    return Ok(deserializedProduct);
+                }
+
+                var product = await _productService.GetProductById(productId);
+
+                if (product != null)
+                {
+                    await db.StringSetAsync($"product:{productId}", JsonSerializer.Serialize(product), TimeSpan.FromSeconds(ProductCacheTTL));
+                    Console.WriteLine($"[DATABASE]: Produto armazenado em cache. [TTL]: {GetKeyTTL(key, db)}");
+                    return Ok(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Eita! Deu erro: {ex.Message}");
+            }
+
+            return Ok();
+        }
+
+        #endregion
 
         public string GetKeyTTL(string key, IDatabase db)
         {
