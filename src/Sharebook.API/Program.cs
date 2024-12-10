@@ -36,10 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Pulse API v1");
+        c.RoutePrefix = string.Empty; // Swagger na raiz da aplicação
     });
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
