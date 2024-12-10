@@ -1,15 +1,19 @@
 version: '3.8'
 
 services:
-  sharebook-api:
-    build:
-      context: ../
-      dockerfile: Sharebook.API/Dockerfile
-    ports:
-       - "5292:80"
-    depends_on:
-      - redis
-
+  # sharebook-api:
+  #   build:
+  #     context: ../
+  #     dockerfile: Sharebook.API/Dockerfile
+  #   ports:
+  #      - "5292:80"
+  #   depends_on:
+  #     - redis
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
   redis:
     image: redis:latest
     container_name: redis_cache

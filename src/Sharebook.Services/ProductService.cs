@@ -50,6 +50,7 @@ namespace Sharebook.Services
 
         public async Task<IEnumerable<Product>> GetAllProducts()
         {
+            Thread.Sleep(3000);
             var productDetailsList = await _unitOfWork.Products.GetAll();
             return productDetailsList;
         }
@@ -58,6 +59,7 @@ namespace Sharebook.Services
         {
             if (productId > 0)
             {
+                Thread.Sleep(3000);
                 var productDetails = await _unitOfWork.Products.GetById(productId);
                 if (productDetails != null)
                 {

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Sharebook.Core.Models;
 using Sharebook.Services.Interfaces;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json;
 
 namespace Sharebook.Controllers
 {
@@ -10,9 +12,14 @@ namespace Sharebook.Controllers
     public class ProductsController : ControllerBase
     {
         public readonly IProductService _productService;
-        public ProductsController(IProductService productService)
+        private readonly IConnectionMultiplexer _redis;
+        public const int ProductCacheTTL = 15;
+
+        public ProductsController(IProductService productService,
+            IConnectionMultiplexer redis)
         {
             _productService = productService;
+            _redis = redis;
         }
 
         /// <summary>
@@ -24,12 +31,34 @@ namespace Sharebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductList()
         {
-            var productList = await _productService.GetAllProducts();
-            if(productList == null)
+            Console.WriteLine("Cached list 1");
+
+            try
             {
-                return NotFound();
+                var db = _redis.GetDatabase();
+                var cachedProductList = await db.StringGetAsync("products:list");
+
+                if (!cachedProductList.IsNullOrEmpty)
+                {
+                    Console.WriteLine("Cached list 2");
+                    var deserializedProductList = JsonSerializer.Deserialize<List<Product>>(cachedProductList);
+                    return Ok(deserializedProductList);
+                }
+
+                var productList = await _productService.GetAllProducts();
+                if (productList.Any())
+                {
+                    Console.WriteLine("Database list");
+                    await db.StringSetAsync("products:list", JsonSerializer.Serialize(productList), TimeSpan.FromSeconds(ProductCacheTTL));
+                    return Ok(productList);
+                }                
             }
-            return Ok(productList);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            return BadRequest();
         }
 
         /// <summary>
@@ -43,16 +72,33 @@ namespace Sharebook.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetProductById(int productId)
         {
-            var product = await _productService.GetProductById(productId);
+            try
+            {
+                Console.WriteLine("Database list");
 
-            if (product != null)
-            {
-                return Ok(product);
+                var db = _redis.GetDatabase();
+
+                var productData = await db.StringGetAsync($"product:{productId}");
+                if (productData.IsNullOrEmpty)
+                {
+                    var product = await _productService.GetProductById(productId);
+
+                    if (product != null)
+                    {
+                        await db.StringSetAsync($"product:{productId}", JsonSerializer.Serialize(product), TimeSpan.FromSeconds(ProductCacheTTL));
+                        return Ok(product);
+                    }
+                }
+
+                var cachedProduct = JsonSerializer.Deserialize<Product>(productData);
+                return Ok(cachedProduct);
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                Console.WriteLine($"Error: {ex.Message}");
             }
+
+            return BadRequest();
         }
 
         /// <summary>
