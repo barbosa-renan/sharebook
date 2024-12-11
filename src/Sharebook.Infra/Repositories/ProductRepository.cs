@@ -8,6 +8,6 @@ namespace Sharebook.Infra.Repositories
         public ProductRepository(DbContextClass dbContext) : base(dbContext)
         {
 
-        }
+        }        
     }
 }

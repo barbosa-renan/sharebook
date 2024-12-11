@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using Sharebook.Infra;
 using Sharebook.Infra.ServiceExtension;
 using Sharebook.Services;
 using Sharebook.Services.Interfaces;
@@ -10,13 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-// Add services to the container.
 builder.Services.AddDIServices(builder.Configuration);
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("redis_cache:6379"));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 
@@ -35,7 +34,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

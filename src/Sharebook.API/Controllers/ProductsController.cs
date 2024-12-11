@@ -118,6 +118,10 @@ namespace Sharebook.Controllers
 
             if (isProductCreated)
             {
+                string redisKey = $"places:products";
+                var db = _redis.GetDatabase();
+                db.GeoAdd(redisKey, new GeoEntry(product.LocationLongitude, product.LocationLatitude, product.Id.ToString()));
+
                 return Ok(isProductCreated);
             }
             else
