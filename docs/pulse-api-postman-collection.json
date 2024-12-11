@@ -1,0 +1,324 @@
+{
+	"info": {
+		"_postman_id": "c04326b7-ac6d-430d-855b-9d343be43f54",
+		"name": "Pulse Product API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4044593"
+	},
+	"item": [
+		{
+			"name": "Seed Produtos",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Definindo os dados dos produtos\r",
+							"const products = [\r",
+							"    {\r",
+							"        \"Name\": \"Cadeira de Escritório\",\r",
+							"        \"Description\": \"Cadeira ergonômica para escritório.\",\r",
+							"        \"Price\": 450,\r",
+							"        \"LocationLatitude\": -19.9191,\r",
+							"        \"LocationLongitude\": -43.9386\r",
+							"    },\r",
+							"    {\r",
+							"        \"Name\": \"Mesa de Jantar\",\r",
+							"        \"Description\": \"Mesa de jantar de madeira maciça.\",\r",
+							"        \"Price\": 950,\r",
+							"        \"ProductStock\": 15,\r",
+							"        \"LocationLatitude\": -19.4696,\r",
+							"        \"LocationLongitude\": -44.2472\r",
+							"    },\r",
+							"    {\r",
+							"        \"Name\": \"Luminária de Mesa\",\r",
+							"        \"Description\": \"Luminária de mesa com design moderno.\",\r",
+							"        \"Price\": 120,\r",
+							"        \"ProductStock\": 50,\r",
+							"        \"LocationLatitude\": -20.1427,\r",
+							"        \"LocationLongitude\": -44.8900\r",
+							"    },\r",
+							"    {\r",
+							"        \"Name\": \"Sofá de 3 Lugares\",\r",
+							"        \"Description\": \"Sofá confortável para 3 pessoas.\",\r",
+							"        \"Price\": 1200,\r",
+							"        \"ProductStock\": 10,\r",
+							"        \"LocationLatitude\": -20.0737,\r",
+							"        \"LocationLongitude\": -44.5491\r",
+							"    },\r",
+							"    {\r",
+							"        \"Name\": \"Rack de TV\",\r",
+							"        \"Description\": \"Rack de TV de madeira para sala de estar.\",\r",
+							"        \"Price\": 450,\r",
+							"        \"ProductStock\": 30,\r",
+							"        \"LocationLatitude\": -20.2382,\r",
+							"        \"LocationLongitude\": -44.8452\r",
+							"    }\r",
+							"];\r",
+							"\r",
+							"// Gerando uma requisição POST para cada produto\r",
+							"for (let i = 0; i < products.length; i++) {\r",
+							"    pm.sendRequest({\r",
+							"        url: 'http://localhost:5292/api/products', \r",
+							"        method: 'POST',\r",
+							"        header: {\r",
+							"            'Content-Type': 'application/json'\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: 'raw',\r",
+							"            raw: JSON.stringify(products[i])\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"        console.log(`Produto ${products[i].Name} enviado: ${res.status}`);\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\": \"Product B\",\r\n    \"Description\": \"This is product B\",\r\n    \"Price\": 100,\r\n    \"ProductStock\": 50\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_base}}/api/products",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obter Produto",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_base}}/api/products/2",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obter Todos Produtos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_base}}/api/products",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar Produto",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\": \"Rack de TV\",\r\n    \"Description\": \"Rack de TV de madeira para sala de estar.\",\r\n    \"Price\": 450,\r\n    \"ProductStock\": 30,\r\n    \"LocationLatitude\": -20.2382,\r\n    \"LocationLongitude\": -44.8452\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_base}}/api/products",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar Produto",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": 1,\r\n    \"Name\": \"Updated Product A\",\r\n    \"Description\": \"This is the updated description for product A\",\r\n    \"Price\": 150,\r\n    \"ProductStock\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_base}}/api/products",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Detalhes Produto",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Id",
+						"value": "user2",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url_base}}/api/products/details/1",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"details",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Visitantes por Produto",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_base}}/api/visitors/product/1",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"visitors",
+						"product",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produtos Próximos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_base}}/api/locations/products/nearby?latitude=-19.9191&longitude=-43.9386&radiusInKm=100",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"locations",
+						"products",
+						"nearby"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "-19.9191"
+						},
+						{
+							"key": "longitude",
+							"value": "-43.9386"
+						},
+						{
+							"key": "radiusInKm",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Distancia Produtos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_base}}/api/locations/products/distance?productId1=2&productId2=5",
+					"host": [
+						"{{url_base}}"
+					],
+					"path": [
+						"api",
+						"locations",
+						"products",
+						"distance"
+					],
+					"query": [
+						{
+							"key": "productId1",
+							"value": "2"
+						},
+						{
+							"key": "productId2",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
